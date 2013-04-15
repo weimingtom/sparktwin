@@ -5,9 +5,9 @@ package
 	
 	import org.flixel.FlxGame;
 	[SWF(width="465", height="465", frameRate="30")]
-	public class SparkTwin extends Sprite
+	public class SparkTwin2 extends Sprite
 	{
-		public function SparkTwin() {
+		public function SparkTwin2() {
 			this.addEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
 		}
 		private function onAddedToStage(e:Event):void {
@@ -22,11 +22,15 @@ package
 	}
 }
 
+import flash.display.BlendMode;
 import flash.display.Sprite;
+import flash.filters.GlowFilter;
 import flash.utils.setTimeout;
 
 import org.flixel.*;
 import org.flixel.system.input.Keyboard;
+import org.fx.Lightning;
+import org.fx.LightningFadeType;
 import org.si.cml.CMLObject;
 import org.si.cml.CMLSequence;
 import org.si.cml.extensions.BulletRunner;
@@ -46,9 +50,15 @@ class PlayState extends FlxState
 	private var _shots:FlxGroup;
 	private var _enemies:FlxGroup;
 	private var _bullets:FlxGroup;
-	
+
+	private var color:uint=0xffffff;
+	private var ll:Lightning=new Lightning(color, 2);
+
 	override public function create():void
 	{
+		
+		ll.blendMode=BlendMode.ADD;
+		
 		//FlxG.bgColor = 0xFF000000;
 		_player = new Player(228, 400);
 		_player.index = 1;
@@ -72,6 +82,28 @@ class PlayState extends FlxState
 		br.runSequence(_rootCML);
 		
 		super.create();
+		
+		var glow:GlowFilter=new GlowFilter();
+		glow.color=color;
+		glow.strength=4;
+		glow.quality=3;
+		glow.blurX=glow.blurY=10;
+		ll.filters=[glow];
+		
+		this.add(ll);
+		
+		ll.startX=_player.x;
+		ll.startY=_player.y;
+		
+		ll.endX=_player2.x;
+		ll.endY=_player2.y;
+		
+		///setChildIndex(ll,0);
+		
+		ll.childrenMaxGenerations=3;
+		ll.childrenMaxCountDecay=.5;
+		
+		
 	}
 	
 	override public function update():void
@@ -84,6 +116,14 @@ class PlayState extends FlxState
 		FlxG.collide(_shots, _enemies, overlapShotsEnemies);
 		
 		super.update();
+		
+		ll.startX=_player.x;
+		ll.startY=_player.y;
+		
+		ll.endX=_player2.x;
+		ll.endY=_player2.y;
+		ll.update();
+		
 	}
 	
 	// callback by "n" command of root object
