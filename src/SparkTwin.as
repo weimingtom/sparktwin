@@ -56,8 +56,8 @@ class PlayState extends FlxState
 		_player2 = new Player(258, 400);
 		_player2.index = 2;
 		
-		_player.anotherPlayer = _player2;
-		_player2.anotherPlayer = _player;
+		_player.targetPoint = _player2.playerPoint;
+		_player2.targetPoint = _player.playerPoint;
 		
 		
 		_shots = Player.shots;
@@ -123,13 +123,13 @@ class PlayState extends FlxState
 			_player = new Player(216, 400);  
 			_player.index = 1;
 			add(_player);
-			_player2.anotherPlayer = _player;
+			_player2.targetPoint = _player.playerPoint;
 
 		} else {
 			_player2 = new Player(236, 400);  
 			_player2.index = 2;
 			add(_player2);			
-			_player.anotherPlayer = _player2;			
+			_player.targetPoint = _player2.playerPoint;			
 		}
 		
 		_bullets = new FlxGroup();
@@ -306,7 +306,15 @@ class Player extends FlxSprite
 	
 	public var index:uint = 1;
 	
-	public var anotherPlayer:Player;
+	//public var anotherPlayer:Player;
+	
+	private var aimAngle:Number = 0;
+	private var radAngle:Number = 0;
+	
+	public var targetPoint:FlxPoint;
+	public var playerPoint:FlxPoint;
+	
+	public var playerDistance:Number;
 	
 	public function Player(x:int, y:int)
 	{
@@ -317,7 +325,12 @@ class Player extends FlxSprite
 		//	this.makeGraphic(8, 8, 0xdfdfdfff);
 		//}
 	}
-	
+	public function setAimAngle(point1:FlxPoint, point2:FlxPoint):Number
+	{
+		aimAngle = FlxU.getAngle(point1, point2);
+		radAngle = Math.atan2(point1.y - point2.y, point1.x - point2.x);
+		return aimAngle;
+	}
 	override public function update():void
 	{
 		var vx:int = 0;
@@ -352,16 +365,32 @@ class Player extends FlxSprite
 		super.update();
 		
 		var dist:Point;
+		
+		//targetPoint = new FlxPoint(FlxG.mouse.x, FlxG.mouse.y);
+		playerPoint = new FlxPoint(x + width / 2, y + height / 2);
+		if (targetPoint) {
+			playerDistance = FlxU.getDistance(playerPoint, targetPoint);
+			setAimAngle(targetPoint, playerPoint);
+			this.angle = aimAngle - 180;
+		}
+		
 		if(keys.X || keys.SPACE) {
 			var shot:Shot = new Shot();
 			shot.x = this.x + this.width/2 - shot.width/2;
 			shot.y = this.y;
-			dist = Point.interpolate(new Point(x,y),new Point(anotherPlayer.x,anotherPlayer.y),0.5);
-			trace(dist);
+			
+			//shot.angle = playerDistance;
+			var rFireAngle:Number = (playerDistance * (Math.PI / 180));
+			shot.velocity.x = Math.cos(rFireAngle) * 100;
+			shot.velocity.y = Math.sin(rFireAngle) * 100;
+			//var angle:Number = FlxU.getAngle(new FlxPoint(x,y), new Point(anotherPlayer.x,anotherPlayer.y));			
+			//dist = Point.interpolate(new Point(x,y),new Point(anotherPlayer.x,anotherPlayer.y),0.5);
+			//trace(dist);
+			//var dd:Number = Point.distance(new Point(x,y),new Point(anotherPlayer.x,anotherPlayer.y));
 
-			dist.normalize(1);
-			shot.direction = dist;
-			trace(dist);
+			//dist.normalize(1);
+			//shot.direction = dist;
+			trace('player: '+index + ' -> '+angle);
 			//shot.x = this.x + this.width/2 - shot.width/2;
 			//shot.y = this.y;
 			shots.add(shot);
@@ -380,6 +409,7 @@ class Shot extends FlxSprite
 	
 	override public function update():void
 	{
+		/*
 		if (direction.x > 0) {
 			x -= 10;			
 		}
@@ -392,6 +422,8 @@ class Shot extends FlxSprite
 		if (direction.y < 0) {
 			y += 10;			
 		}
+		*/
+		
 		
 		
 		if (y < 0) this.kill();
