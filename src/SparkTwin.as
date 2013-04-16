@@ -23,6 +23,7 @@ package
 }
 
 import flash.display.Sprite;
+import flash.geom.Point;
 import flash.utils.setTimeout;
 
 import org.flixel.*;
@@ -54,6 +55,11 @@ class PlayState extends FlxState
 		_player.index = 1;
 		_player2 = new Player(258, 400);
 		_player2.index = 2;
+		
+		_player.anotherPlayer = _player2;
+		_player2.anotherPlayer = _player;
+		
+		
 		_shots = Player.shots;
 		_enemies = Enemy.enemies;
 		_bullets = Bullet.bullets;
@@ -117,11 +123,15 @@ class PlayState extends FlxState
 			_player = new Player(216, 400);  
 			_player.index = 1;
 			add(_player);
+			_player2.anotherPlayer = _player;
+
 		} else {
 			_player2 = new Player(236, 400);  
 			_player2.index = 2;
-			add(_player2);
+			add(_player2);			
+			_player.anotherPlayer = _player2;			
 		}
+		
 		_bullets = new FlxGroup();
 		Bullet.bullets = _bullets;
 		add(_bullets);
@@ -296,6 +306,8 @@ class Player extends FlxSprite
 	
 	public var index:uint = 1;
 	
+	public var anotherPlayer:Player;
+	
 	public function Player(x:int, y:int)
 	{
 		super(x, y);
@@ -339,10 +351,19 @@ class Player extends FlxSprite
 		
 		super.update();
 		
+		var dist:Point;
 		if(keys.X || keys.SPACE) {
 			var shot:Shot = new Shot();
 			shot.x = this.x + this.width/2 - shot.width/2;
 			shot.y = this.y;
+			dist = Point.interpolate(new Point(x,y),new Point(anotherPlayer.x,anotherPlayer.y),0.5);
+			trace(dist);
+
+			dist.normalize(1);
+			shot.direction = dist;
+			trace(dist);
+			//shot.x = this.x + this.width/2 - shot.width/2;
+			//shot.y = this.y;
 			shots.add(shot);
 		}
 	}
@@ -350,6 +371,8 @@ class Player extends FlxSprite
 
 class Shot extends FlxSprite
 {
+	public var direction:Point;	
+	
 	public function Shot()
 	{
 		this.makeGraphic(2, 8, 0xffffffff);
@@ -357,9 +380,22 @@ class Shot extends FlxSprite
 	
 	override public function update():void
 	{
-		y -= 16;
-		if(y < 0) this.kill();
+		if (direction.x > 0) {
+			x -= 10;			
+		}
+		if (direction.x < 0) {
+			x += 10;			
+		}
+		if (direction.y > 0) {
+			y -= 10;			
+		}
+		if (direction.y < 0) {
+			y += 10;			
+		}
 		
+		
+		if (y < 0) this.kill();
+		if (x < 0) this.kill();
 		super.update();
 	}
 }
