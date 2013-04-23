@@ -1,16 +1,16 @@
 package
 {
 	import org.flixel.*;
-	import com.leapmotion.leap.CircleGesture;
-	import com.leapmotion.leap.Finger;
-	import com.leapmotion.leap.Frame;
-	import com.leapmotion.leap.Gesture;
-	import com.leapmotion.leap.Hand;
-	import com.leapmotion.leap.LeapMotion;
-	import com.leapmotion.leap.Screen;
-	import com.leapmotion.leap.Vector3;
-	import com.leapmotion.leap.events.LeapEvent;
-	import com.leapmotion.leap.util.LeapUtil;
+//	import com.leapmotion.leap.CircleGesture;
+//	import com.leapmotion.leap.Finger;
+//	import com.leapmotion.leap.Frame;
+//	import com.leapmotion.leap.Gesture;
+//	import com.leapmotion.leap.Hand;
+//	import com.leapmotion.leap.LeapMotion;
+//	import com.leapmotion.leap.Screen;
+//	import com.leapmotion.leap.Vector3;
+//	import com.leapmotion.leap.events.LeapEvent;
+//	import com.leapmotion.leap.util.LeapUtil;
 	import com.rhuno.Airxbc;
 	import com.rhuno.X360Gamepad;
 	
@@ -47,14 +47,14 @@ package
 		
 		private var _bg:FlxSprite;
 		
-		private var leap:LeapMotion;
-		private var screenList:Vector.<Screen>;
-		private var screen:Screen;
+//		private var leap:LeapMotion;
+//		private var screenList:Vector.<Screen>;
+//		private var screen:Screen;
 		private var screenWidth:uint;
 		private var screenHeight:uint;
 		//private var cursor:FlxSprite;
-		private var currentVectorPlayer1:Vector3;
-		private var currentVectorPlayer2:Vector3;
+//		private var currentVectorPlayer1:Vector3;
+//		private var currentVectorPlayer2:Vector3;
 		private var _ext:Airxbc;
 		public var _gamepad:X360Gamepad;
 		
@@ -115,115 +115,115 @@ package
 			super.create();
 		}
 		
-		private function onConnect( event:LeapEvent ):void
-		{
-			trace( "Connected" );
-			screenList = leap.controller.calibratedScreens();
-			screen = screenList[ 0 ];
-			screenWidth = screen.widthPixels();
-			screenHeight = screen.heightPixels();
-			leap.controller.enableGesture( Gesture.TYPE_CIRCLE );
-		}
-		
-		private function onFrame( event:LeapEvent ):void
-		{
-			
-			var frame:Frame = event.frame;
-			//trace( "Frame id: " + frame.id + ", timestamp: " + frame.timestamp + ", hands: " + frame.hands.length + ", fingers: " + frame.fingers.length + ", tools: " + frame.tools.length + ", gestures: " + frame.gestures().length );
-			var hand:Hand;
-			if ( frame.hands.length > 0 )
-			{
-				// Get the first hand
-				hand = frame.hands[ 0 ];
-				
-				// Check if the hand has any fingers
-				var fingers:Vector.<Finger> = hand.fingers;
-				if ( !fingers.length == 0 )
-				{
-					// Calculate the hand's average finger tip position
-					var avgPos:Vector3 = Vector3.zero();
-					for each ( var finger:Finger in fingers )
-					avgPos = avgPos.plus( finger.tipPosition );
-					
-					avgPos = avgPos.divide( fingers.length );
-					//trace( "Hand has " + fingers.length + " fingers, average finger tip position: " + avgPos );
-					
-					//currentVectorPlayer1 = screen.intersectPointable( event.frame.pointables[ 0 ], true );
-					currentVectorPlayer1 = screen.intersect( hand.palmPosition,hand.direction, true );
-					var direction:Vector3 = hand.direction;
-					var pitch:Number = LeapUtil.toDegrees( direction.pitch ) - 24;
-					trace(pitch);
-					if (pitch > 5 ) {
-						_player.setClockwiseness('clockwise');
-					} else if (pitch < -5 ){
-						_player.setClockwiseness('counterclockwise');
-					}
-					_player.x = FlxG.width * currentVectorPlayer1.x - FlxG.worldBounds.x;
-					_player.y = FlxG.height * ( 1 - currentVectorPlayer1.y ) - FlxG.worldBounds.y;
-					
-				}
-				
-				// Get the hand's sphere radius and palm position
-				//trace( "Hand sphere radius: " + hand.sphereRadius + " mm, palm position: " + hand.palmPosition );
-				
-				// Get the hand's normal vector and direction
-				var normal:Vector3 = hand.palmNormal;
-				var direction:Vector3 = hand.direction;
-				
-				// Calculate the hand's pitch, roll, and yaw angles
-				trace( "Hand pitch: " + LeapUtil.toDegrees( direction.pitch ) + " degrees, " + "roll: " + LeapUtil.toDegrees( normal.roll ) + " degrees, " + "yaw: " + LeapUtil.toDegrees( direction.yaw ) + " degrees\n" );
-			}
-			
-			if ( event.frame.pointables.length > 0 && FlxG.stage && FlxG.stage.nativeWindow)
-			{
-				/*
-				Optionally, you can call screen.intersect() with a position and direction Vector3:
-				screen.intersect( event.frame.pointables[ 0 ].tipPosition, event.frame.pointables[ 0 ].direction, true );
-				*/
-				for each ( var gesture:Gesture in event.frame.gestures() )
-				{
-					if(gesture is CircleGesture )
-					{
-						var circle:CircleGesture = CircleGesture( gesture );
-						var clockwiseness:String;
-						var angle:Number = circle.pointable.direction.angleTo( circle.normal )
-						if ( angle <= Math.PI / 4 )
-						{
-							// Clockwise if angle is less than 90 degrees
-							clockwiseness = "clockwise";
-						}
-						else
-						{
-							clockwiseness = "counterclockwise";
-						}
-						//trace('shoot '+ angle);
-						// Calculate angle swept since last frame
-						var sweptAngle:Number = 0;
-						if ( circle.state != Gesture.STATE_START )
-						{
-							var previousGesture:Gesture = leap.frame( 1 ).gesture( circle.id );
-							if( previousGesture.isValid() )
-							{
-								var previousUpdate:CircleGesture = CircleGesture( leap.frame( 1 ).gesture( circle.id ) );
-								sweptAngle = ( circle.progress - previousUpdate.progress ) * 2 * Math.PI;
-							}
-						}
-						
-						
-						//_player.setClockwiseness(clockwiseness);
-						//trace( "Circle id: " + circle.id + ", " + circle.state + ", progress: " + circle.progress + ", radius: " + circle.radius + ", angle: " + LeapUtil.toDegrees( sweptAngle ) + ", " + clockwiseness );
-						
-					}
-				}
-				
-				
-				
-				//_player.angle = LeapUtil.toDegrees( sweptAngle ) * 180 / Math.PI;
-				//currentVectorPlayer2 = screen.intersectPointable( event.frame.pointables[ 1 ], true );
-				//_player2.x = FlxG.width * currentVectorPlayer2.x - FlxG.worldBounds.x;
-				//_player2.y = FlxG.height * ( 1 - currentVectorPlayer2.y ) - FlxG.worldBounds.y; 
-			}
-		}
+//		private function onConnect( event:LeapEvent ):void
+//		{
+//			trace( "Connected" );
+//			screenList = leap.controller.calibratedScreens();
+//			screen = screenList[ 0 ];
+//			screenWidth = screen.widthPixels();
+//			screenHeight = screen.heightPixels();
+//			leap.controller.enableGesture( Gesture.TYPE_CIRCLE );
+//		}
+//		
+//		private function onFrame( event:LeapEvent ):void
+//		{
+//			
+//			var frame:Frame = event.frame;
+//			//trace( "Frame id: " + frame.id + ", timestamp: " + frame.timestamp + ", hands: " + frame.hands.length + ", fingers: " + frame.fingers.length + ", tools: " + frame.tools.length + ", gestures: " + frame.gestures().length );
+//			var hand:Hand;
+//			if ( frame.hands.length > 0 )
+//			{
+//				// Get the first hand
+//				hand = frame.hands[ 0 ];
+//				
+//				// Check if the hand has any fingers
+//				var fingers:Vector.<Finger> = hand.fingers;
+//				if ( !fingers.length == 0 )
+//				{
+//					// Calculate the hand's average finger tip position
+//					var avgPos:Vector3 = Vector3.zero();
+//					for each ( var finger:Finger in fingers )
+//					avgPos = avgPos.plus( finger.tipPosition );
+//					
+//					avgPos = avgPos.divide( fingers.length );
+//					//trace( "Hand has " + fingers.length + " fingers, average finger tip position: " + avgPos );
+//					
+//					//currentVectorPlayer1 = screen.intersectPointable( event.frame.pointables[ 0 ], true );
+//					currentVectorPlayer1 = screen.intersect( hand.palmPosition,hand.direction, true );
+//					var direction:Vector3 = hand.direction;
+//					var pitch:Number = LeapUtil.toDegrees( direction.pitch ) - 24;
+//					trace(pitch);
+//					if (pitch > 5 ) {
+//						_player.setClockwiseness('clockwise');
+//					} else if (pitch < -5 ){
+//						_player.setClockwiseness('counterclockwise');
+//					}
+//					_player.x = FlxG.width * currentVectorPlayer1.x - FlxG.worldBounds.x;
+//					_player.y = FlxG.height * ( 1 - currentVectorPlayer1.y ) - FlxG.worldBounds.y;
+//					
+//				}
+//				
+//				// Get the hand's sphere radius and palm position
+//				//trace( "Hand sphere radius: " + hand.sphereRadius + " mm, palm position: " + hand.palmPosition );
+//				
+//				// Get the hand's normal vector and direction
+//				var normal:Vector3 = hand.palmNormal;
+//				var direction:Vector3 = hand.direction;
+//				
+//				// Calculate the hand's pitch, roll, and yaw angles
+//				trace( "Hand pitch: " + LeapUtil.toDegrees( direction.pitch ) + " degrees, " + "roll: " + LeapUtil.toDegrees( normal.roll ) + " degrees, " + "yaw: " + LeapUtil.toDegrees( direction.yaw ) + " degrees\n" );
+//			}
+//			
+//			if ( event.frame.pointables.length > 0 && FlxG.stage && FlxG.stage.nativeWindow)
+//			{
+//				/*
+//				Optionally, you can call screen.intersect() with a position and direction Vector3:
+//				screen.intersect( event.frame.pointables[ 0 ].tipPosition, event.frame.pointables[ 0 ].direction, true );
+//				*/
+//				for each ( var gesture:Gesture in event.frame.gestures() )
+//				{
+//					if(gesture is CircleGesture )
+//					{
+//						var circle:CircleGesture = CircleGesture( gesture );
+//						var clockwiseness:String;
+//						var angle:Number = circle.pointable.direction.angleTo( circle.normal )
+//						if ( angle <= Math.PI / 4 )
+//						{
+//							// Clockwise if angle is less than 90 degrees
+//							clockwiseness = "clockwise";
+//						}
+//						else
+//						{
+//							clockwiseness = "counterclockwise";
+//						}
+//						//trace('shoot '+ angle);
+//						// Calculate angle swept since last frame
+//						var sweptAngle:Number = 0;
+//						if ( circle.state != Gesture.STATE_START )
+//						{
+//							var previousGesture:Gesture = leap.frame( 1 ).gesture( circle.id );
+//							if( previousGesture.isValid() )
+//							{
+//								var previousUpdate:CircleGesture = CircleGesture( leap.frame( 1 ).gesture( circle.id ) );
+//								sweptAngle = ( circle.progress - previousUpdate.progress ) * 2 * Math.PI;
+//							}
+//						}
+//						
+//						
+//						//_player.setClockwiseness(clockwiseness);
+//						//trace( "Circle id: " + circle.id + ", " + circle.state + ", progress: " + circle.progress + ", radius: " + circle.radius + ", angle: " + LeapUtil.toDegrees( sweptAngle ) + ", " + clockwiseness );
+//						
+//					}
+//				}
+//				
+//				
+//				
+//				//_player.angle = LeapUtil.toDegrees( sweptAngle ) * 180 / Math.PI;
+//				//currentVectorPlayer2 = screen.intersectPointable( event.frame.pointables[ 1 ], true );
+//				//_player2.x = FlxG.width * currentVectorPlayer2.x - FlxG.worldBounds.x;
+//				//_player2.y = FlxG.height * ( 1 - currentVectorPlayer2.y ) - FlxG.worldBounds.y; 
+//			}
+//		}
 		override public function update():void
 		{         
 			

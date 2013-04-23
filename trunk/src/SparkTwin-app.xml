@@ -252,6 +252,6 @@
 
 <extensions>
         <extensionID>com.rhuno.Airxbc</extensionID>
-    <extensionID>com.leapmotion.leap.air.native.LeapNative</extensionID>
+    
     </extensions>
 </application>
