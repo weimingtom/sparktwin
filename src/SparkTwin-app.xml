@@ -67,13 +67,13 @@
 		<!-- <maximizable></maximizable> -->
 
 		<!-- Whether the user can resize the window. Optional. Default true. -->
-		<!-- <resizable></resizable> -->
+		<resizable>false</resizable>
 
 		<!-- The window's initial width in pixels. Optional. -->
-		<!-- <width></width> -->
+		<width>600</width>
 
 		<!-- The window's initial height in pixels. Optional. -->
-		<!-- <height></height> -->
+		<height>600</height>
 
 		<!-- The window's initial x position. Optional. -->
 		<!-- <x></x> -->
@@ -249,7 +249,9 @@
     <!-- </android> -->
 	<!-- End of the schema for adding the android specific tags in AndroidManifest.xml file -->
 
+
 <extensions>
-        <extensionID>com.leapmotion.leap.air.native.LeapNative</extensionID>
+        <extensionID>com.rhuno.Airxbc</extensionID>
+    <extensionID>com.leapmotion.leap.air.native.LeapNative</extensionID>
     </extensions>
 </application>
