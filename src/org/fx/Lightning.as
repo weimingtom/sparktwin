@@ -219,7 +219,7 @@ package org.fx {
 				}
 			}
 			this.parent.removeChild(this);
-			delete this;
+			//delete this;
 		}
 		public function killAllChildren():void {
 			while(childrenArray.length>0) {

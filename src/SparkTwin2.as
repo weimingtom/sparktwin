@@ -54,6 +54,8 @@ class PlayState extends FlxState
 	private var color:uint=0xffffff;
 	private var ll:Lightning=new Lightning(color, 2);
 
+	
+	
 	override public function create():void
 	{
 		
@@ -90,7 +92,7 @@ class PlayState extends FlxState
 		glow.blurX=glow.blurY=10;
 		ll.filters=[glow];
 		
-		this.add(ll);
+		//this.add(ll);
 		
 		ll.startX=_player.x;
 		ll.startY=_player.y;
@@ -103,7 +105,7 @@ class PlayState extends FlxState
 		ll.childrenMaxGenerations=3;
 		ll.childrenMaxCountDecay=.5;
 		
-		
+		FlxG.stage.addChild(ll);
 	}
 	
 	override public function update():void
@@ -111,8 +113,8 @@ class PlayState extends FlxState
 		BulletRunner.updateTargetPosition(_player.x, _player.y);
 		BulletRunner.updateTargetPosition(_player2.x, _player2.y);
 		//collide
-		FlxG.collide(_bullets, _player, overlapBulletsPlayer);
-		FlxG.collide(_bullets, _player2, overlapBulletsPlayer);
+		//FlxG.collide(_bullets, _player, overlapBulletsPlayer);
+		//FlxG.collide(_bullets, _player2, overlapBulletsPlayer);
 		FlxG.collide(_shots, _enemies, overlapShotsEnemies);
 		
 		super.update();
