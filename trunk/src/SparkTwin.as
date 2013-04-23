@@ -17,31 +17,18 @@ package
 		
 		private function run():void
 		{
-			this.addChild(new FlxGame(465, 465, PlayState, 1));
+			var g:FlxGame;
+			g = new FlxGame(465, 465, PlayState, 1);
+			g.forceDebugger = true;
+			this.addChild(g);
 		}
 	}
 }
 
-import com.leapmotion.leap.CircleGesture;
-import com.leapmotion.leap.Gesture;
-import com.leapmotion.leap.LeapMotion;
-import com.leapmotion.leap.Screen;
-import com.leapmotion.leap.Vector3;
-import com.leapmotion.leap.events.LeapEvent;
-
 import flash.display.Sprite;
-import flash.geom.Point;
 import flash.utils.setTimeout;
 
-import org.flixel.FlxEmitter;
-import org.flixel.FlxG;
-import org.flixel.FlxGroup;
-import org.flixel.FlxParticle;
-import org.flixel.FlxPoint;
-import org.flixel.FlxSprite;
-import org.flixel.FlxState;
-import org.flixel.FlxText;
-import org.flixel.FlxU;
+import org.flixel.*;
 import org.flixel.system.input.Keyboard;
 import org.si.cml.CMLObject;
 import org.si.cml.CMLSequence;
@@ -57,37 +44,19 @@ class PlayState extends FlxState
 	private var _textfield:FlxText;
 	
 	private var _player:Player;
-	private var _player2:Player;
-	
 	private var _shots:FlxGroup;
 	private var _enemies:FlxGroup;
 	private var _bullets:FlxGroup;
 	
-	private var leap:LeapMotion;
-	private var screenList:Vector.<Screen>;
-	private var screen:Screen;
-	private var screenWidth:uint;
-	private var screenHeight:uint;
-	//private var cursor:FlxSprite;
-	private var currentVectorPlayer1:Vector3;
-	private var currentVectorPlayer2:Vector3;
 	override public function create():void
 	{
 		//FlxG.bgColor = 0xFF000000;
 		_player = new Player(228, 400);
-		_player.index = 1;
-		_player2 = new Player(258, 400);
-		_player2.index = 2;
-		
-		_player.targetPoint = _player2.playerPoint;
-		_player2.targetPoint = _player.playerPoint;
-		
-		
 		_shots = Player.shots;
 		_enemies = Enemy.enemies;
 		_bullets = Bullet.bullets;
+		FlxG.debug = true;
 		this.add(_player);
-		this.add(_player2);
 		this.add(_shots);
 		this.add(_enemies);
 		this.add(_bullets);
@@ -100,69 +69,16 @@ class PlayState extends FlxState
 		br.callbacks = {"onNew": onRootNew};
 		br.runSequence(_rootCML);
 		
-		
-		
-		//FlxG.stage.align = StageAlign.TOP_LEFT;
-		//stage.scaleMode = StageScaleMode.NO_SCALE;
-		//stage.displayState = StageDisplayState.FULL_SCREEN_INTERACTIVE;
-		//cursor = new FlxSprite();
-		//cursor = cursor.makeGraphic(10, 10, 0x00ff00ff);
-		//cursor.graphics.beginFill( 0xff0000 );
-		//cursor.graphics.drawCircle( -5, -5, 10 );
-		//cursor.graphics.endFill();
-		//this.add( cursor );
-		//FlxG.debug=true;
-		leap = new LeapMotion();
-		leap.controller.addEventListener( LeapEvent.LEAPMOTION_CONNECTED, onConnect );
-		leap.controller.addEventListener( LeapEvent.LEAPMOTION_FRAME, onFrame );
 		super.create();
 	}
 	
-	private function onConnect( event:LeapEvent ):void
-	{
-		trace( "Connected" );
-		screenList = leap.controller.calibratedScreens();
-		screen = screenList[ 0 ];
-		screenWidth = screen.widthPixels();
-		screenHeight = screen.heightPixels();
-		//leap.controller.enableGesture( Gesture.TYPE_CIRCLE );
-	}
-	
-	private function onFrame( event:LeapEvent ):void
-	{
-		if ( event.frame.pointables.length > 1 && FlxG.stage && FlxG.stage.nativeWindow)
-		{
-			/*
-			Optionally, you can call screen.intersect() with a position and direction Vector3:
-			screen.intersect( event.frame.pointables[ 0 ].tipPosition, event.frame.pointables[ 0 ].direction, true );
-			*/
-			/*for each ( var gesture:Gesture in event.frame.gestures() )
-			{
-				if(gesture is CircleGesture )
-				{
-					trace('shoot');
-				}
-			}*/
-			currentVectorPlayer1 = screen.intersectPointable( event.frame.pointables[ 0 ], true );
-			_player.x = FlxG.width * currentVectorPlayer1.x - FlxG.worldBounds.x;
-			_player.y = FlxG.height * ( 1 - currentVectorPlayer1.y ) - FlxG.worldBounds.y;
-			
-			currentVectorPlayer2 = screen.intersectPointable( event.frame.pointables[ 1 ], true );
-			_player2.x = FlxG.width * currentVectorPlayer2.x - FlxG.worldBounds.x;
-			_player2.y = FlxG.height * ( 1 - currentVectorPlayer2.y ) - FlxG.worldBounds.y; 
-		}
-	}
 	override public function update():void
 	{           
 		BulletRunner.updateTargetPosition(_player.x, _player.y);
-		BulletRunner.updateTargetPosition(_player2.x, _player2.y);
+		
 		//collide
 		//FlxG.collide(_bullets, _player, overlapBulletsPlayer);
-		//FlxG.collide(_bullets, _player2, overlapBulletsPlayer);
 		FlxG.collide(_shots, _enemies, overlapShotsEnemies);
-		
-		_player.targetPoint = _player2.playerPoint;
-		_player2.targetPoint = _player.playerPoint;
 		
 		super.update();
 	}
@@ -177,9 +93,6 @@ class PlayState extends FlxState
 	{
 		var emitter:FlxEmitter = createEmitter(0xffffffff, 8);
 		emitter.at(_player);
-		
-		emitter.at(_player2);
-		
 		emitter.start();
 		this.add(emitter);
 		
@@ -190,22 +103,12 @@ class PlayState extends FlxState
 		updateText();
 		
 		BulletRunner.pause();
-		setTimeout(reborn, 1000,player);
+		setTimeout(reborn, 1000);
 	}
-	private function reborn(player:Player):void
-	{	
-		if (player.index == 1) {
-			_player = new Player(216, 400);  
-			_player.index = 1;
-			add(_player);
-			_player2.targetPoint = _player.playerPoint;
-
-		} else {
-			_player2 = new Player(236, 400);  
-			_player2.index = 2;
-			add(_player2);			
-			_player.targetPoint = _player2.playerPoint;			
-		}
+	private function reborn():void
+	{
+		_player = new Player(216, 400);  
+		add(_player);
 		
 		_bullets = new FlxGroup();
 		Bullet.bullets = _bullets;
@@ -379,64 +282,22 @@ class Player extends FlxSprite
 {
 	public static var shots:FlxGroup = new FlxGroup();
 	
-	public var index:uint = 1;
-	
-	//public var anotherPlayer:Player;
-	
-	private var aimAngle:Number = 0;
-	private var radAngle:Number = 0;
-	
-	public var targetPoint:FlxPoint;
-	public var playerPoint:FlxPoint;
-	
-	public var playerDistance:Number;
-	
-	private var shotToggle:Boolean = false;
-	
 	public function Player(x:int, y:int)
 	{
 		super(x, y);
-		//if (index == 1) {
-			this.makeGraphic(8, 8, 0xffffffff);
-		//} else {
-		//	this.makeGraphic(8, 8, 0xdfdfdfff);
-		//}
+		this.makeGraphic(8, 8, 0xffffffff);
 	}
-	public function setAimAngle(point2:FlxPoint, point1:FlxPoint):Number
-	{
-		//return FlxU.getAngle(point2, point1);
-		
-		//aimAngle = FlxU.getAngle((point2.x - (point1.x + (width/2))), (point2.y - (point1.y + (height/2))));
-		return Math.atan2(point1.y - point2.y, point1.x - point2.x);
-		//return aimAngle;
-	}
-	public function getAnglePrecise(X:Number, Y:Number):Number
-	{
-		return Math.atan2(Y,X) * 180 / Math.PI;
-	}
+	
 	override public function update():void
 	{
 		var vx:int = 0;
 		var vy:int = 0;
 		
 		var keys:Keyboard = FlxG.keys;
-		
-		var left:int;
-		var right:int;
-		var down:int;
-		var up:int;
-		
-		if (index == 1) {
-			left = keys.LEFT ? 1 : 0;
-			right = keys.RIGHT ? 1 : 0;
-			down = keys.DOWN ? 1 : 0;
-			up = keys.UP ? 1 : 0;
-		} else {
-			left = keys.A ? 1 : 0;
-			right = keys.D ? 1 : 0
-			down = keys.S ? 1 : 0;
-			up = keys.W ? 1 : 0;
-		}
+		var left:int = keys.LEFT ? 1 : 0;
+		var right:int = keys.RIGHT ? 1 : 0
+		var down:int = keys.DOWN ? 1 : 0;
+		var up:int = keys.UP ? 1 : 0
 		
 		vx = 4 * right - 4 * left;
 		vy = 4 * down - 4 * up;
@@ -447,88 +308,27 @@ class Player extends FlxSprite
 		
 		super.update();
 		
-		var dist:Point;
-		
-		//targetPoint = new FlxPoint(FlxG.mouse.x, FlxG.mouse.y);
-		playerPoint = new FlxPoint(x + width / 2, y + height / 2);
-		if (targetPoint) {
-			playerDistance = FlxU.getDistance(playerPoint, targetPoint);
-			//aimAngle = setAimAngle(targetPoint, playerPoint);
-			aimAngle =getAnglePrecise(targetPoint.x - (x + (width/2)), targetPoint.y - (y + (height/2)));
-			//this.angle = aimAngle - 180;
-		}
-
-		if (keys.justPressed("SPACE")){
-			shotToggle = !shotToggle;
-		}
-
-		
-		if((keys.X || keys.SPACE || shotToggle)) {
-			
+		if(keys.X || keys.SPACE) {
 			var shot:Shot = new Shot();
-			//shot.x = this.x + this.width/2 - shot.width/2;
-			//shot.y = this.y;
-			shot.reset(this.x,this.y);
-			shot.angle = aimAngle;
-			//var rFireAngle:Number = (playerDistance * (Math.PI / 180));
-			var rFireAngle:Number = (aimAngle * (Math.PI / 180));
-			if (playerDistance < 300) {
-				shot.velocity.x = Math.cos(rFireAngle) * 100;
-				shot.velocity.y = Math.sin(rFireAngle) * 100;				
-			} 
-			
-			
-			//shot.velocity.y = 0;
-			//var angle:Number = FlxU.getAngle(new FlxPoint(x,y), new Point(anotherPlayer.x,anotherPlayer.y));			
-			//dist = Point.interpolate(new Point(x,y),new Point(anotherPlayer.x,anotherPlayer.y),0.5);
-			//trace(dist);
-			//var dd:Number = Point.distance(new Point(x,y),new Point(anotherPlayer.x,anotherPlayer.y));
-
-			//dist.normalize(1);
-			//shot.direction = dist;
-			//trace('player: '+index + ' -> '+aimAngle + ' distance '+playerDistance);
-			//shot.x = this.x + this.width/2 - shot.width/2;
-			//shot.y = this.y;
-			shot.distance = playerDistance;
-			setTimeout(shot.kill,1500);
+			shot.x = this.x + this.width/2 - shot.width/2;
+			shot.y = this.y;
 			shots.add(shot);
-			
 		}
 	}
 }
 
 class Shot extends FlxSprite
 {
-	public var distance:Number;	
-	
 	public function Shot()
 	{
-		this.makeGraphic(5, 5, 0xffffffff);
+		this.makeGraphic(2, 8, 0xffffffff);
 	}
 	
 	override public function update():void
 	{
-		/*
-		if (direction.x > 0) {
-			x -= 10;			
-		}
-		if (direction.x < 0) {
-			x += 10;			
-		}
-		if (direction.y > 0) {
-			y -= 10;			
-		}
-		if (direction.y < 0) {
-			y += 10;			
-		}
-		*/
-		if (distance < 150) {
-			y -= 10;
-		}
+		y -= 16;
+		if(y < 0) this.kill();
 		
-		
-		if (y < 0 || y > 465) this.kill();
-		if (x < 0 || x > 465) this.kill();
 		super.update();
 	}
 }
